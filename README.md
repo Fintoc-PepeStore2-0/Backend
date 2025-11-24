@@ -45,15 +45,16 @@ API REST construida con Node.js, Express y PostgreSQL para gestionar usuarios, p
 - `POST /api/cart/items` – Agrega productos al carrito.
 - `PUT /api/cart/items/:itemId` – Actualiza la cantidad (0 elimina).
 - `DELETE /api/cart/items/:itemId` – Elimina el item del carrito.
-- `POST /api/purchase/start` – Inicia el intent de pago en Fintoc.
-- `GET /api/purchase/status/:intentId` – Consulta y sincroniza estado del pago.
+- `POST /api/purchase/start` – Crea un Checkout Session y retorna `session_token` + `publicKey`.
+- `GET /api/purchase/status/:sessionId` – Consulta y sincroniza el estado del Checkout Session.
 
 Todas las rutas bajo `/api/cart` y `/api/purchase` requieren un header `Authorization: Bearer <token>`.
 
 ## Notas
 
 - Prisma administra el esquema y genera las migraciones en `prisma/migrations`.
-- La integración con Fintoc usa `axios` y espera las variables `FINTOC_SECRET_KEY`, `FINTOC_RECIPIENT_ACCOUNT_ID` y `FINTOC_RETURN_URL`.
+- La integración con Fintoc usa el SDK oficial (`fintoc`). Configura `FINTOC_SECRET_KEY`, `FINTOC_PUBLIC_KEY`, `FINTOC_CURRENCY`, `FINTOC_SUCCESS_URL`, `FINTOC_CANCEL_URL` y `FINTOC_RETURN_URL`.
+- `POST /api/purchase/start` responde con `{ checkoutSession, publicKey }`. Usa `checkoutSession.session_token` + `publicKey` para inicializar el widget en tu frontend.
 - Las contraseñas se almacenan con `bcryptjs`.
 - El middleware `authenticateJWT` protege rutas y `authorizeRole` permite futuras restricciones.
 - Para poblar productos de ejemplo usa `npm run seed:products` después de aplicar las migraciones (lee `productos.json`).

@@ -4,7 +4,7 @@ const { startPurchase, getPurchaseStatus } = require('../controllers/purchaseCon
 const router = express.Router();
 
 router.post('/start', startPurchase);
-router.get('/status/:intentId', getPurchaseStatus);
+router.get('/status/:sessionId', getPurchaseStatus);
 
 module.exports = router;
 

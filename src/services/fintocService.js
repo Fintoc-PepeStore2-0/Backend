@@ -1,54 +1,68 @@
-const axios = require('axios');
+const { Fintoc } = require('fintoc');
 
-const FINTOC_API_BASE = 'https://api.fintoc.com/v1';
+let client;
 
-const fintocClient = axios.create({
-  baseURL: FINTOC_API_BASE,
-  headers: {
-    Authorization: `Bearer ${process.env.FINTOC_SECRET_KEY}`,
-    'Content-Type': 'application/json',
-  },
-});
-
-const handleFintocError = (error) => {
-  if (error.response) {
-    const { status, data } = error.response;
-    const message = data?.message || 'Error en la llamada a Fintoc';
-    const err = new Error(message);
-    err.status = status;
-    err.details = data;
-    throw err;
+const getClient = () => {
+  if (client) {
+    return client;
   }
-  throw error;
+
+  if (!process.env.FINTOC_SECRET_KEY) {
+    throw new Error('FINTOC_SECRET_KEY no está configurada');
+  }
+
+  client = new Fintoc(process.env.FINTOC_SECRET_KEY);
+  return client;
 };
 
-const createPaymentIntent = async ({ amount, recipientAccountId, returnUrl, description }) => {
+const wrapError = (error) => {
+  const err = new Error(error?.message || 'Error al comunicarse con Fintoc');
+  err.status = error?.statusCode || error?.status || 500;
+  err.details = error;
+  return err;
+};
+
+const createCheckoutSession = async ({
+  amount,
+  currency,
+  customerEmail,
+  successUrl,
+  cancelUrl,
+  metadata,
+}) => {
+  const payload = {
+    amount,
+    currency,
+    customer_email: customerEmail,
+  };
+
+  if (successUrl) {
+    payload.success_url = successUrl;
+  }
+  if (cancelUrl) {
+    payload.cancel_url = cancelUrl;
+  }
+  if (metadata) {
+    payload.metadata = metadata;
+  }
+
   try {
-    const response = await fintocClient.post('/payment_intents', {
-      amount,
-      recipient_account_id: recipientAccountId,
-      return_url: returnUrl,
-      description,
-    });
-    return response.data;
+    return await getClient().checkoutSessions.create(payload);
   } catch (error) {
-    handleFintocError(error);
-    return null;
+    throw wrapError(error);
   }
 };
 
-const getPaymentIntent = async (intentId) => {
+const getCheckoutSession = async (sessionId) => {
   try {
-    const response = await fintocClient.get(`/payment_intents/${intentId}`);
-    return response.data;
+    return await getClient().checkoutSessions.get(sessionId);
   } catch (error) {
-    handleFintocError(error);
-    return null;
+    throw wrapError(error);
   }
 };
 
 module.exports = {
-  createPaymentIntent,
-  getPaymentIntent,
+  createCheckoutSession,
+  getCheckoutSession,
 };
 

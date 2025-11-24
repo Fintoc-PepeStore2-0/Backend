@@ -40,8 +40,11 @@ API REST construida con Node.js, Express y PostgreSQL para gestionar usuarios, p
 - `POST /api/auth/register` – Registro (rol `client` por defecto).
 - `POST /api/auth/login` – Login + JWT.
 - `GET /api/products` – Listado público de productos.
+- `GET /api/products/:productId/stock` – Stock disponible (total, reservado, disponible).
 - `GET /api/cart` – Obtiene o crea el carrito del usuario autenticado.
 - `POST /api/cart/items` – Agrega productos al carrito.
+- `PUT /api/cart/items/:itemId` – Actualiza la cantidad (0 elimina).
+- `DELETE /api/cart/items/:itemId` – Elimina el item del carrito.
 - `POST /api/purchase/start` – Inicia el intent de pago en Fintoc.
 - `GET /api/purchase/status/:intentId` – Consulta y sincroniza estado del pago.
 
